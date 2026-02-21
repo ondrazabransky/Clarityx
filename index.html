@@ -1,0 +1,1323 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ondřej Zábranský — AI reporting, automatizace a kyberbezpečnost</title>
+  <meta name="description" content="AI reporting (Power BI/SQL), automatizace závěrky a kyberbezpečnost (NIS2/ISO 27001) pro firmy. Prakticky, rychle, bez zbytečné teorie." />
+  <meta name="theme-color" content="#0a0e1a" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="AI reporting, automatizace a kyberbezpečnost pro firmy" />
+  <meta property="og:description" content="Power BI + SQL + AI reporting a NIS2/ISO 27001 příprava. Konzultace zdarma." />
+  <meta property="og:type" content="website" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --bg2: #0d1224;
+      --surface: #111830;
+      --surface2: #151d3a;
+      --text: #eaf0ff;
+      --muted: #8b9cc7;
+      --border: rgba(138,160,220,.12);
+      --accent: #00d4ff;
+      --accent-glow: rgba(0,212,255,.15);
+      --purple: #8b5cf6;
+      --purple-glow: rgba(139,92,246,.12);
+      --green: #34d399;
+      --amber: #fbbf24;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --max: 1140px;
+      --font-display: 'Sora', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --shadow: 0 24px 80px rgba(0,0,0,.45);
+      --shadow-sm: 0 8px 30px rgba(0,0,0,.25);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    /* ===== BACKGROUND EFFECTS ===== */
+    .bg-glow {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 900px 600px at 15% 5%, rgba(0,212,255,.08), transparent 60%),
+        radial-gradient(ellipse 700px 500px at 85% 20%, rgba(139,92,246,.06), transparent 55%),
+        radial-gradient(ellipse 500px 400px at 50% 80%, rgba(52,211,153,.04), transparent 50%);
+    }
+
+    .grid-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: .035;
+      background-image:
+        linear-gradient(rgba(138,160,220,.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(138,160,220,.5) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* ===== LAYOUT ===== */
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* ===== NAV ===== */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      background: rgba(10,14,26,.72);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 0; gap: 20px;
+    }
+
+    .brand {
+      display: flex; gap: 10px; align-items: center;
+      font-family: var(--font-display);
+      font-weight: 700; font-size: 16px;
+      letter-spacing: -.3px;
+    }
+
+    .brand-mark {
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px rgba(0,212,255,.25), 0 0 40px rgba(139,92,246,.15);
+      position: relative;
+    }
+
+    .brand-mark::after {
+      content: 'OZ';
+      font-family: var(--font-display);
+      font-weight: 800; font-size: 12px;
+      color: var(--bg);
+      letter-spacing: -.5px;
+    }
+
+    .menu { display: flex; gap: 6px; align-items: center; }
+
+    .menu a {
+      color: var(--muted);
+      font-size: 13.5px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: color .2s, background .2s;
+      text-decoration: none;
+    }
+
+    .menu a:hover { color: var(--text); background: rgba(255,255,255,.05); }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-weight: 600; font-size: 14px;
+      cursor: pointer;
+      transition: all .2s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.15); transform: translateY(-1px); }
+
+    .btn-primary {
+      border: none;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+      color: var(--bg);
+      font-weight: 700;
+      box-shadow: 0 8px 32px rgba(0,212,255,.2), 0 4px 16px rgba(139,92,246,.15);
+    }
+
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,212,255,.25), 0 6px 20px rgba(139,92,246,.2); }
+
+    /* Mobile hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none; border: none;
+      cursor: pointer; padding: 8px;
+    }
+
+    .hamburger span {
+      width: 22px; height: 2px;
+      background: var(--muted);
+      border-radius: 2px;
+      transition: all .3s ease;
+    }
+
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(10,14,26,.95);
+      backdrop-filter: blur(20px);
+      z-index: 99;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .mobile-menu.open { display: flex; }
+
+    .mobile-menu a {
+      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 20px; font-weight: 600;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 12px;
+      transition: background .2s;
+    }
+
+    .mobile-menu a:hover { background: rgba(255,255,255,.05); }
+
+    .mobile-close {
+      position: absolute; top: 20px; right: 24px;
+      background: none; border: none;
+      color: var(--muted); font-size: 28px;
+      cursor: pointer;
+    }
+
+    /* ===== HERO ===== */
+    .hero { padding: 72px 0 32px; }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+
+    .tag {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+    }
+
+    .tag--cyan { background: rgba(0,212,255,.1); color: var(--accent); border: 1px solid rgba(0,212,255,.2); }
+    .tag--purple { background: var(--purple-glow); color: var(--purple); border: 1px solid rgba(139,92,246,.2); }
+    .tag--green { background: rgba(52,211,153,.1); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -1.2px;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, var(--text) 50%, var(--muted) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--muted);
+      margin-bottom: 28px;
+      max-width: 52ch;
+    }
+
+    .hero-sub strong { color: var(--text); font-weight: 600; }
+
+    .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+
+    .trust-row {
+      display: flex; gap: 16px; flex-wrap: wrap;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .trust-item {
+      display: flex; gap: 8px; align-items: center;
+      font-size: 13px; color: var(--muted);
+    }
+
+    .trust-icon {
+      width: 20px; height: 20px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .trust-icon--cyan { background: rgba(0,212,255,.12); color: var(--accent); }
+    .trust-icon--green { background: rgba(52,211,153,.12); color: var(--green); }
+    .trust-icon--purple { background: var(--purple-glow); color: var(--purple); }
+
+    /* Hero side panel */
+    .hero-panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: linear-gradient(170deg, rgba(17,24,48,.9), rgba(13,18,36,.95));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero-panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; gap: 8px; align-items: center;
+    }
+
+    .panel-dot { width: 8px; height: 8px; border-radius: 99px; }
+    .panel-dot--r { background: #f87171; }
+    .panel-dot--y { background: #fbbf24; }
+    .panel-dot--g { background: #34d399; }
+
+    .hero-panel-header span {
+      font-size: 12px; color: var(--muted);
+      margin-left: 8px; font-weight: 500;
+    }
+
+    .hero-panel-body { padding: 20px; }
+
+    .metric {
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,.02);
+      margin-bottom: 10px;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+
+    .metric:last-child { margin-bottom: 0; }
+
+    .metric-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .metric-icon--cyan { background: rgba(0,212,255,.1); border: 1px solid rgba(0,212,255,.15); }
+    .metric-icon--purple { background: var(--purple-glow); border: 1px solid rgba(139,92,246,.15); }
+    .metric-icon--green { background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.15); }
+
+    .metric h4 { font-size: 14px; font-weight: 700; margin-bottom: 3px; font-family: var(--font-display); }
+    .metric p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* ===== SECTIONS ===== */
+    .section { padding: 64px 0; }
+
+    .section-label {
+      font-family: var(--font-display);
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .section h2 {
+      font-family: var(--font-display);
+      font-size: 32px; font-weight: 800;
+      letter-spacing: -.5px;
+      margin-bottom: 10px;
+    }
+
+    .section .lead {
+      color: var(--muted);
+      max-width: 65ch;
+      line-height: 1.7;
+      margin-bottom: 32px;
+      font-size: 15.5px;
+    }
+
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), var(--border), transparent);
+    }
+
+    /* ===== SERVICES GRID ===== */
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+    .service-card {
+      padding: 28px 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      transition: border-color .3s, transform .3s, box-shadow .3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+
+    .service-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-sm); }
+    .service-card:hover::before { opacity: 1; }
+
+    .service-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent), transparent); }
+    .service-card:nth-child(1):hover { border-color: rgba(0,212,255,.2); }
+    .service-card:nth-child(2)::before { background: linear-gradient(90deg, var(--purple), transparent); }
+    .service-card:nth-child(2):hover { border-color: rgba(139,92,246,.2); }
+    .service-card:nth-child(3)::before { background: linear-gradient(90deg, var(--green), transparent); }
+    .service-card:nth-child(3):hover { border-color: rgba(52,211,153,.2); }
+
+    .service-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .service-icon--cyan { background: rgba(0,212,255,.08); border: 1px solid rgba(0,212,255,.15); }
+    .service-icon--purple { background: var(--purple-glow); border: 1px solid rgba(139,92,246,.15); }
+    .service-icon--green { background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.15); }
+
+    .service-card h3 {
+      font-family: var(--font-display);
+      font-size: 17px; font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .service-card > p { color: var(--muted); font-size: 14px; margin-bottom: 16px; line-height: 1.6; }
+
+    .service-list { list-style: none; padding: 0; }
+
+    .service-list li {
+      font-size: 13.5px; color: var(--muted);
+      padding: 5px 0;
+      display: flex; gap: 8px; align-items: flex-start;
+      line-height: 1.45;
+    }
+
+    .service-list li::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 99px;
+      flex-shrink: 0;
+      margin-top: 7px;
+    }
+
+    .service-card:nth-child(1) .service-list li::before { background: var(--accent); }
+    .service-card:nth-child(2) .service-list li::before { background: var(--purple); }
+    .service-card:nth-child(3) .service-list li::before { background: var(--green); }
+
+    /* ===== TARGET / SPLIT ===== */
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .split-card {
+      padding: 28px 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.02);
+    }
+
+    .split-card h3 {
+      font-family: var(--font-display);
+      font-size: 17px; font-weight: 700;
+      margin-bottom: 16px;
+      display: flex; gap: 10px; align-items: center;
+    }
+
+    .check-list { list-style: none; padding: 0; }
+
+    .check-list li {
+      font-size: 14px; color: var(--muted);
+      padding: 8px 0;
+      display: flex; gap: 10px; align-items: flex-start;
+      border-bottom: 1px solid rgba(138,160,220,.06);
+      line-height: 1.5;
+    }
+
+    .check-list li:last-child { border-bottom: none; }
+
+    .check-list li svg { flex-shrink: 0; margin-top: 2px; }
+
+    /* ===== PROCESS ===== */
+    .steps { display: grid; gap: 10px; }
+
+    .step {
+      display: flex; gap: 16px; align-items: flex-start;
+      padding: 18px 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,.02);
+      transition: background .2s;
+    }
+
+    .step:hover { background: rgba(255,255,255,.04); }
+
+    .step-num {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,212,255,.08);
+      border: 1px solid rgba(0,212,255,.15);
+      color: var(--accent);
+      font-family: var(--font-display);
+      font-weight: 800; font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .step h4 { font-family: var(--font-display); font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+    .step p { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+
+    /* ===== REFERENCES ===== */
+    .ref-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+    .ref-card {
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.02);
+      position: relative;
+    }
+
+    .ref-card::before {
+      content: '»';
+      position: absolute;
+      top: 18px; right: 20px;
+      font-size: 24px;
+      color: rgba(138,160,220,.15);
+      font-weight: 700;
+    }
+
+    .ref-label {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 5px;
+    }
+
+    .ref-label--cyan { background: rgba(0,212,255,.08); color: var(--accent); }
+    .ref-label--purple { background: var(--purple-glow); color: var(--purple); }
+    .ref-label--green { background: rgba(52,211,153,.08); color: var(--green); }
+
+    .ref-card h3 {
+      font-family: var(--font-display);
+      font-size: 16px; font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .ref-card p { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin-bottom: 6px; }
+    .ref-card p strong { color: var(--text); font-weight: 600; }
+
+    /* ===== PRICING ===== */
+    .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+    .price-card {
+      padding: 24px 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.02);
+      position: relative;
+      transition: transform .3s, box-shadow .3s;
+    }
+
+    .price-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+
+    .price-card.featured {
+      background: linear-gradient(170deg, rgba(0,212,255,.06), rgba(139,92,246,.05));
+      border-color: rgba(0,212,255,.2);
+    }
+
+    .price-badge {
+      position: absolute; top: 16px; right: 16px;
+      padding: 4px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 700;
+      background: rgba(52,211,153,.1);
+      border: 1px solid rgba(52,211,153,.2);
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .price-card h3 {
+      font-family: var(--font-display);
+      font-size: 16px; font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .price-val {
+      font-family: var(--font-display);
+      font-size: 26px; font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -.5px;
+    }
+
+    .price-val small { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+    .price-list { list-style: none; padding: 0; }
+
+    .price-list li {
+      font-size: 13.5px; color: var(--muted);
+      padding: 5px 0;
+      display: flex; gap: 8px; align-items: center;
+      line-height: 1.4;
+    }
+
+    .price-list li svg { flex-shrink: 0; }
+
+    /* ===== FAQ ===== */
+    .faq-list { display: grid; gap: 8px; max-width: 780px; }
+
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,.02);
+      overflow: hidden;
+    }
+
+    .faq-item summary {
+      padding: 16px 20px;
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 14.5px;
+      list-style: none;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: background .2s;
+    }
+
+    .faq-item summary:hover { background: rgba(255,255,255,.03); }
+
+    .faq-item summary::-webkit-details-marker { display: none; }
+
+    .faq-item summary::after {
+      content: '+';
+      font-size: 18px;
+      color: var(--muted);
+      font-weight: 400;
+      transition: transform .2s;
+    }
+
+    .faq-item[open] summary::after { content: '−'; }
+
+    .faq-item .faq-body {
+      padding: 0 20px 16px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ===== CONTACT ===== */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 20px;
+    }
+
+    .contact-form-wrap {
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: linear-gradient(170deg, rgba(17,24,48,.8), rgba(13,18,36,.9));
+      box-shadow: var(--shadow);
+    }
+
+    .form-group { margin-bottom: 12px; }
+
+    .form-group label {
+      display: block;
+      font-size: 12px; font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: rgba(10,14,26,.6);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    input:focus, textarea:focus { border-color: rgba(0,212,255,.35); }
+    textarea { min-height: 100px; resize: vertical; }
+
+    .contact-info { display: flex; flex-direction: column; gap: 14px; }
+
+    .info-card {
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.02);
+    }
+
+    .info-card h3 {
+      font-family: var(--font-display);
+      font-size: 15px; font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .info-card p { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+
+    .info-card .info-list { list-style: none; padding: 0; }
+
+    .info-card .info-list li {
+      font-size: 13.5px; color: var(--muted);
+      padding: 5px 0;
+      display: flex; gap: 8px; align-items: center;
+      line-height: 1.4;
+    }
+
+    .info-card .info-list li svg { flex-shrink: 0; }
+
+    .tech-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+
+    .tech-pill {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px; font-weight: 600;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+
+    .footer-inner {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 16px; flex-wrap: wrap;
+    }
+
+    .footer-text { font-size: 13px; color: var(--muted); }
+
+    /* ===== ANIMATIONS ===== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1);
+    }
+
+    .reveal.on { opacity: 1; transform: translateY(0); }
+
+    .reveal-d1 { transition-delay: .08s; }
+    .reveal-d2 { transition-delay: .16s; }
+    .reveal-d3 { transition-delay: .24s; }
+    .reveal-d4 { transition-delay: .32s; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .services-grid { grid-template-columns: 1fr; }
+      .ref-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+      .split { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 38px; }
+      .menu { display: none; }
+      .hamburger { display: flex; }
+    }
+
+    @media (max-width: 640px) {
+      .pricing-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 32px; }
+      .section h2 { font-size: 26px; }
+      .hero { padding: 48px 0 24px; }
+      .section { padding: 48px 0; }
+      .footer-inner { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-glow"></div>
+  <div class="grid-bg"></div>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobileMenu">
+    <button class="mobile-close" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Zavřít menu">&times;</button>
+    <a href="#sluzby" onclick="this.parentElement.classList.remove('open')">Služby</a>
+    <a href="#prokoho" onclick="this.parentElement.classList.remove('open')">Pro koho</a>
+    <a href="#proces" onclick="this.parentElement.classList.remove('open')">Jak to probíhá</a>
+    <a href="#reference" onclick="this.parentElement.classList.remove('open')">Reference</a>
+    <a href="#cenik" onclick="this.parentElement.classList.remove('open')">Ceník</a>
+    <a href="#faq" onclick="this.parentElement.classList.remove('open')">FAQ</a>
+    <a href="#kontakt" onclick="this.parentElement.classList.remove('open')">Kontakt</a>
+  </div>
+
+  <!-- NAV -->
+  <header class="nav">
+    <div class="wrap">
+      <div class="nav-inner">
+        <a class="brand" href="#top">
+          <span class="brand-mark"></span>
+          <span>Ondřej Zábranský</span>
+        </a>
+        <nav class="menu">
+          <a href="#sluzby">Služby</a>
+          <a href="#prokoho">Pro koho</a>
+          <a href="#proces">Proces</a>
+          <a href="#reference">Reference</a>
+          <a href="#cenik">Ceník</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <a class="btn-primary btn" href="#kontakt">Konzultace zdarma</a>
+          <button class="hamburger" onclick="document.getElementById('mobileMenu').classList.add('open')" aria-label="Otevřít menu">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+      <div class="wrap">
+        <div class="hero-grid">
+          <div>
+            <div class="tag-row reveal">
+              <span class="tag tag--cyan">AI Reporting</span>
+              <span class="tag tag--purple">Power BI + SQL</span>
+              <span class="tag tag--green">NIS2 / ISO 27001</span>
+            </div>
+
+            <h1 class="reveal reveal-d1">Data, automatizace<br>a kyberbezpečnost<br>pro váš byznys</h1>
+
+            <p class="hero-sub reveal reveal-d2">
+              Pomáhám <strong>CFO a CEO</strong> zrychlit reporting (SQL / Power BI / AI),
+              odstranit ruční práci v závěrce a připravit firmu na <strong>NIS2 / ISO 27001</strong>.
+              Prakticky, rychle, bez zbytečné teorie.
+            </p>
+
+            <div class="cta-row reveal reveal-d3">
+              <a class="btn btn-primary" href="#kontakt">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                20min konzultace zdarma
+              </a>
+              <a class="btn" href="#cenik">Zobrazit balíčky</a>
+            </div>
+
+            <div class="trust-row reveal reveal-d4">
+              <div class="trust-item">
+                <span class="trust-icon trust-icon--cyan">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <span>Výsledky do 14 dnů</span>
+              </div>
+              <div class="trust-item">
+                <span class="trust-icon trust-icon--green">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <span>Úspora 10–30 h/měs</span>
+              </div>
+              <div class="trust-item">
+                <span class="trust-icon trust-icon--purple">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <span>Fixní ceny + NDA</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero side panel – terminal style -->
+          <aside class="hero-panel reveal reveal-d2">
+            <div class="hero-panel-header">
+              <span class="panel-dot panel-dot--r"></span>
+              <span class="panel-dot panel-dot--y"></span>
+              <span class="panel-dot panel-dot--g"></span>
+              <span>dashboard_preview.bi</span>
+            </div>
+            <div class="hero-panel-body">
+              <div class="metric">
+                <div class="metric-icon metric-icon--cyan">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </div>
+                <div>
+                  <h4>Reporting bez Excel pekla</h4>
+                  <p>Jednotný P&amp;L, rozvaha, cashflow — automatizované datové zdroje z ERP.</p>
+                </div>
+              </div>
+              <div class="metric">
+                <div class="metric-icon metric-icon--purple">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <div>
+                  <h4>Automatizace závěrky</h4>
+                  <p>SQL optimalizace, kontrolní reporty, automatické exporty a validace.</p>
+                </div>
+              </div>
+              <div class="metric">
+                <div class="metric-icon metric-icon--green">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div>
+                  <h4>NIS2 / ISO roadmapa</h4>
+                  <p>GAP analýza, risk assessment, dokumentace, školení a plán implementace.</p>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ===== SLUŽBY ===== -->
+    <section id="sluzby" class="section">
+      <div class="wrap">
+        <div class="section-label reveal">Co nabízím</div>
+        <h2 class="reveal">Tři pilíře, jeden cíl: firma řízená daty</h2>
+        <p class="lead reveal">Vyber si jednu oblast, nebo to spojíme do jednoho programu — BI + automatizace + security governance.</p>
+
+        <div class="services-grid">
+          <div class="service-card reveal">
+            <div class="service-icon service-icon--cyan">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </div>
+            <h3>CFO Reporting &amp; Power BI</h3>
+            <p>Management reporting, který dává smysl. Jednotná čísla, jasné metriky, minimum manuální práce.</p>
+            <ul class="service-list">
+              <li>P&amp;L, rozvaha, cashflow, EBITDA, CAPEX</li>
+              <li>Pohledávky/závazky, projekty, profit centra</li>
+              <li>Napojení na SQL / ERP (SAP B1 aj.)</li>
+              <li>AI-asistovaná analýza trendů a anomálií</li>
+            </ul>
+          </div>
+
+          <div class="service-card reveal reveal-d1">
+            <div class="service-icon service-icon--purple">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <h3>Automatizace závěrky &amp; data pipeline</h3>
+            <p>Odstranění ručních kroků, kontrolní mechanismy, stabilní datové toky pro BI i audit.</p>
+            <ul class="service-list">
+              <li>SQL audit a optimalizace dotazů</li>
+              <li>Automatické exporty + validace dat</li>
+              <li>Kontrolní reporty (anomálie, duplicity, chyby)</li>
+              <li>n8n / workflow automatizace procesů</li>
+            </ul>
+          </div>
+
+          <div class="service-card reveal reveal-d2">
+            <div class="service-icon service-icon--green">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Kyberbezpečnost &amp; NIS2 / ISO 27001</h3>
+            <p>Pragmatická příprava: co udělat, v jakém pořadí, s realistickými náklady a dopady.</p>
+            <ul class="service-list">
+              <li>GAP analýza, risk assessment</li>
+              <li>Dokumentace + procesy + školení</li>
+              <li>Governance, M365 / Entra / Intune</li>
+              <li>Conditional Access, Defender, Purview</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ===== PRO KOHO ===== -->
+    <section id="prokoho" class="section">
+      <div class="wrap">
+        <div class="section-label reveal">Ideální klient</div>
+        <h2 class="reveal">Poznáváte se?</h2>
+        <p class="lead reveal">Pokud ano, pravděpodobně vám dokážu rychle pomoct.</p>
+
+        <div class="split">
+          <div class="split-card reveal">
+            <h3>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Typicky řešíte
+            </h3>
+            <ul class="check-list">
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Reporting trvá dny a stejně mu nikdo nevěří
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Data jsou v ERP/SQL, ale končí v Excelu
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Závěrka je ruční proces plný chyb
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                NIS2 "visí ve vzduchu" a chybí kapacita
+              </li>
+            </ul>
+          </div>
+
+          <div class="split-card reveal reveal-d1">
+            <h3>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Typický klient
+            </h3>
+            <ul class="check-list">
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Výrobní firma 100–500 zaměstnanců
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Holding / skupina firem s potřebou konsolidace
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                CFO/CEO, kteří chtějí řízení podle dat
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                IT tým přetížený a potřebuje oporu zvenku
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ===== PROCES ===== -->
+    <section id="proces" class="section">
+      <div class="wrap">
+        <div class="section-label reveal">Spolupráce</div>
+        <h2 class="reveal">Jak to probíhá</h2>
+        <p class="lead reveal">Rychlý start, jasné výstupy. Vždy víte, co bude další krok.</p>
+
+        <div class="steps" style="max-width:680px;">
+          <div class="step reveal">
+            <div class="step-num">1</div>
+            <div>
+              <h4>20 minut call zdarma</h4>
+              <p>Ujasníme cíl, datové zdroje, priority a rizika. Bez závazků.</p>
+            </div>
+          </div>
+          <div class="step reveal reveal-d1">
+            <div class="step-num">2</div>
+            <div>
+              <h4>Rychlá diagnostika</h4>
+              <p>BI/SQL audit nebo security GAP — podle toho, co potřebujete.</p>
+            </div>
+          </div>
+          <div class="step reveal reveal-d2">
+            <div class="step-num">3</div>
+            <div>
+              <h4>Návrh řešení + fixní cena</h4>
+              <p>Konkrétní balíček nebo retainer. Bez překvapení, bez skrytých nákladů.</p>
+            </div>
+          </div>
+          <div class="step reveal reveal-d3">
+            <div class="step-num">4</div>
+            <div>
+              <h4>Implementace</h4>
+              <p>Dashboard, automatizace, NIS2 roadmapa + kompletní dokumentace.</p>
+            </div>
+          </div>
+          <div class="step reveal reveal-d4">
+            <div class="step-num">5</div>
+            <div>
+              <h4>Předání &amp; rozvoj</h4>
+              <p>Školení vašeho týmu, provozní podpora, průběžné zlepšování.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ===== REFERENCE ===== -->
+    <section id="reference" class="section">
+      <div class="wrap">
+        <div class="section-label reveal">Výsledky</div>
+        <h2 class="reveal">Ukázky z praxe</h2>
+        <p class="lead reveal">Anonymizované příklady z reálných projektů.</p>
+
+        <div class="ref-grid">
+          <div class="ref-card reveal">
+            <span class="ref-label ref-label--cyan">BI / Reporting</span>
+            <h3>Výroba: z dnů na hodiny</h3>
+            <p><strong>Problém:</strong> Měsíční reporting v Excelu, ruční exporty, nesoulad čísel mezi odděleními.</p>
+            <p><strong>Výsledek:</strong> Jednotné BI nad SQL/ERP + kontrolní validace → reporting do 2 hodin místo 3 dnů.</p>
+          </div>
+          <div class="ref-card reveal reveal-d1">
+            <span class="ref-label ref-label--purple">Konsolidace</span>
+            <h3>Holding: jednotný model napříč firmami</h3>
+            <p><strong>Problém:</strong> Různé přístupy k účtům a projektům, složitá konsolidace skupiny.</p>
+            <p><strong>Výsledek:</strong> Datový model + KPI definice → porovnatelnost a řízení podle dat v celé skupině.</p>
+          </div>
+          <div class="ref-card reveal reveal-d2">
+            <span class="ref-label ref-label--green">Kyberbezpečnost</span>
+            <h3>NIS2: realistická roadmapa</h3>
+            <p><strong>Problém:</strong> Nejasná odpovědnost, chybí dokumentace a risk assessment.</p>
+            <p><strong>Výsledek:</strong> GAP + rizika + plán kontrol + školení managementu → připraveno k implementaci.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ===== CENÍK ===== -->
+    <section id="cenik" class="section">
+      <div class="wrap">
+        <div class="section-label reveal">Investice</div>
+        <h2 class="reveal">Balíčky a ceny</h2>
+        <p class="lead reveal">Orientační ceny podle rozsahu. Po 20min callu pošlu fixní nabídku na míru.</p>
+
+        <div class="pricing-grid">
+          <div class="price-card reveal">
+            <h3>Start</h3>
+            <div class="price-val">od 49 000 Kč</div>
+            <ul class="price-list">
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 1 dashboard + KPI definice</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Datový model nad ERP</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Základní validace</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Předání + krátké školení</li>
+            </ul>
+          </div>
+
+          <div class="price-card featured reveal reveal-d1">
+            <span class="price-badge">Nejčastější</span>
+            <h3>Pro</h3>
+            <div class="price-val">od 120 000 Kč</div>
+            <ul class="price-list">
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Více dashboardů + drilldown</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Automatizace exportů</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Kontrolní reporty</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Governance metrik</li>
+            </ul>
+          </div>
+
+          <div class="price-card reveal reveal-d2">
+            <h3>NIS2 Ready</h3>
+            <div class="price-val">150–400k Kč</div>
+            <ul class="price-list">
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> GAP analýza</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Risk assessment</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Dokumentace + procesy</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Roadmapa a školení</li>
+            </ul>
+          </div>
+
+          <div class="price-card reveal reveal-d3">
+            <h3>Retainer</h3>
+            <div class="price-val">od 15 000 Kč <small>/ měs</small></div>
+            <ul class="price-list">
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Průběžný rozvoj BI</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Support + dohled</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Prioritizace backlogu</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Měsíční management report</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ===== FAQ ===== -->
+    <section id="faq" class="section">
+      <div class="wrap">
+        <div class="section-label reveal">Otázky</div>
+        <h2 class="reveal">Časté dotazy</h2>
+        <p class="lead reveal">Krátké odpovědi na to, co klienty zajímá nejčastěji.</p>
+
+        <div class="faq-list">
+          <details class="faq-item reveal">
+            <summary>Jak rychle uvidíme první výsledky?</summary>
+            <div class="faq-body">Typicky do 7–14 dnů první dashboard nebo první část NIS2 roadmapy. Záleží na dostupnosti dat a kapacitě na vaší straně.</div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Co když máme chaos v datech?</summary>
+            <div class="faq-body">To je běžné. Začneme diagnostikou, nastavíme minimální datové standardy a postupně zlepšíme kvalitu i automatizaci. Většina firem startuje z podobného bodu.</div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Děláte fixní ceny?</summary>
+            <div class="faq-body">Ano. Po krátké diagnostice pošlu balíček s fixní cenou. U dlouhodobé spolupráce dává smysl retainer s jasně definovaným scopem.</div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Podepisujete NDA?</summary>
+            <div class="faq-body">Ano, NDA je standard. Stejně tak práce s anonymizovanými daty pro veškeré ukázky a reference.</div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Umíte i Microsoft 365 / Entra / Intune?</summary>
+            <div class="faq-body">Ano. Typicky v rámci bezpečnostní vrstvy — Conditional Access, BYOD politiky, Defender, Purview a governance doporučení pro celý M365 tenant.</div>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Jak probíhá spolupráce na dálku?</summary>
+            <div class="faq-body">Většina práce probíhá remote — přes Teams/Meet, sdílený backlog a pravidelné statusy. Na úvodní diagnostiku a školení jsem zvyklý přijet osobně.</div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ===== KONTAKT ===== -->
+    <section id="kontakt" class="section">
+      <div class="wrap">
+        <div class="section-label reveal">Začněme</div>
+        <h2 class="reveal">Napište mi</h2>
+        <p class="lead reveal">Stručně popište, co řešíte. Ozvu se s návrhem dalšího kroku do 24 hodin.</p>
+
+        <div class="contact-grid">
+          <div class="contact-form-wrap reveal">
+            <form id="leadForm" action="https://formspree.io/f/TVUJ_FORM_ID" method="POST">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div class="form-group">
+                  <label for="name">Jméno *</label>
+                  <input id="name" name="name" placeholder="Ondřej Novák" required />
+                </div>
+                <div class="form-group">
+                  <label for="company">Firma</label>
+                  <input id="company" name="company" placeholder="ACME s.r.o." />
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div class="form-group">
+                  <label for="email">E-mail *</label>
+                  <input id="email" type="email" name="email" placeholder="ondrej@firma.cz" required />
+                </div>
+                <div class="form-group">
+                  <label for="phone">Telefon</label>
+                  <input id="phone" name="phone" placeholder="+420 ..." />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="message">Co chcete zlepšit?</label>
+                <textarea id="message" name="message" placeholder="Reporting, závěrka, NIS2, M365... Popište stručně vaši situaci."></textarea>
+              </div>
+              <button class="btn btn-primary" type="submit" style="width:100%; padding:13px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Odeslat zprávu
+              </button>
+              <p style="font-size:12px; color:var(--muted); margin-top:8px; text-align:center;">Tip: napište do zprávy „CALL" a pošlu návrh termínů pro videohovor.</p>
+            </form>
+          </div>
+
+          <div class="contact-info reveal reveal-d1">
+            <div class="info-card">
+              <h3>Co dostanete po odeslání</h3>
+              <ul class="info-list">
+                <li>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Návrh postupu (1–2 varianty)
+                </li>
+                <li>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Orientační rozpočet + časová osa
+                </li>
+                <li>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Co budu potřebovat od vás (data/přístupy)
+                </li>
+              </ul>
+            </div>
+
+            <div class="info-card">
+              <h3>O mně</h3>
+              <p>IT + finance + BI + security. Propojuji techniku s byznysem: data, reporting, automatizace a řízení rizik. Pracuji s výrobními firmami a holdingy v CZ/EU.</p>
+              <div class="tech-pills">
+                <span class="tech-pill">SQL / Power BI</span>
+                <span class="tech-pill">SAP B1</span>
+                <span class="tech-pill">NIS2 / ISO</span>
+                <span class="tech-pill">M365 / Entra</span>
+                <span class="tech-pill">n8n / AI</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size:12px; color:var(--muted); margin-top:20px; text-align:center;">
+          © <span id="year"></span> Ondřej Zábranský · IČO doplníte · <a href="#" style="color:var(--muted); text-decoration:underline;">Ochrana osobních údajů</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-inner">
+        <span class="footer-text">Připraveno pro nasazení na Netlify / Vercel / vlastní hosting.</span>
+        <a class="btn" href="#top" style="padding:8px 16px; font-size:13px;">Zpět nahoru ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Reveal on scroll
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); obs.unobserve(e.target); } });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    // Smooth scroll for anchors
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      });
+    });
+  </script>
+</body>
+</html>
