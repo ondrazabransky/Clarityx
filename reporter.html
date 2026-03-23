@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI SQL Reporter — SAP B1 | Clarityx</title>
+  <meta name="description" content="Pište otázky česky, AI je převede na SQL a zobrazí výsledky ze SAP Business One." />
+  <meta name="theme-color" content="#0a0e1a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --bg2: #0d1224;
+      --surface: #111830;
+      --surface2: #151d3a;
+      --text: #eaf0ff;
+      --muted: #8b9cc7;
+      --border: rgba(138,160,220,.12);
+      --accent: #00d4ff;
+      --accent-glow: rgba(0,212,255,.15);
+      --purple: #8b5cf6;
+      --purple-glow: rgba(139,92,246,.12);
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --max: 1140px;
+      --font-display: 'Sora', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --shadow: 0 24px 80px rgba(0,0,0,.45);
+      --shadow-sm: 0 8px 30px rgba(0,0,0,.25);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.65;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ── Background ── */
+    .bg-glow {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 900px 600px at 15% 5%, rgba(0,212,255,.08), transparent 60%),
+        radial-gradient(ellipse 700px 500px at 85% 20%, rgba(139,92,246,.06), transparent 55%),
+        radial-gradient(ellipse 500px 400px at 50% 80%, rgba(52,211,153,.04), transparent 50%);
+    }
+    .grid-bg {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0; opacity: .035;
+      background-image:
+        linear-gradient(rgba(138,160,220,.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(138,160,220,.5) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(16px) saturate(180%);
+      background: rgba(10,14,26,.72);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: var(--max); margin: 0 auto; padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .nav-brand {
+      font-family: var(--font-display); font-weight: 700; font-size: 18px;
+      color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 10px;
+    }
+    .nav-brand .dot { color: var(--accent); }
+    .nav-badge {
+      font-size: 11px; font-weight: 600; letter-spacing: .04em;
+      background: var(--accent-glow); color: var(--accent);
+      border: 1px solid rgba(0,212,255,.2); border-radius: 6px;
+      padding: 2px 8px; text-transform: uppercase;
+    }
+    .nav-back {
+      font-size: 13px; color: var(--muted); text-decoration: none;
+      display: flex; align-items: center; gap: 6px;
+      transition: color .2s;
+    }
+    .nav-back:hover { color: var(--accent); }
+
+    /* ── Layout ── */
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 0 40px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 50px; padding: 6px 16px; margin-bottom: 24px;
+      font-size: 13px; color: var(--muted);
+    }
+    .hero-badge .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green); box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+    h1 {
+      font-family: var(--font-display); font-size: clamp(28px, 5vw, 44px);
+      font-weight: 800; line-height: 1.15; margin-bottom: 16px;
+    }
+    h1 .accent { color: var(--accent); }
+    h1 .purple { color: var(--purple); }
+    .hero-sub { color: var(--muted); font-size: 16px; max-width: 560px; margin: 0 auto 40px; }
+
+    /* ── Input Section ── */
+    .input-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .input-label {
+      font-family: var(--font-display); font-size: 13px; font-weight: 600;
+      color: var(--muted); letter-spacing: .06em; text-transform: uppercase;
+      margin-bottom: 12px; display: block;
+    }
+    .input-row {
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    textarea#question {
+      flex: 1;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      padding: 14px 18px;
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    textarea#question::placeholder { color: var(--muted); }
+    textarea#question:focus {
+      border-color: rgba(0,212,255,.4);
+      box-shadow: 0 0 0 3px rgba(0,212,255,.08);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #0099cc);
+      color: #000;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 14px 28px;
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity .2s, transform .1s;
+      display: flex; align-items: center; gap: 8px;
+      min-width: 140px; justify-content: center;
+    }
+    .btn-primary:hover { opacity: .88; }
+    .btn-primary:active { transform: scale(.97); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    /* ── Examples ── */
+    .examples-label {
+      font-size: 12px; color: var(--muted); margin-top: 14px; margin-bottom: 8px;
+    }
+    .examples { display: flex; flex-wrap: wrap; gap: 8px; }
+    .example-chip {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 50px; padding: 5px 14px;
+      font-size: 12px; color: var(--muted);
+      cursor: pointer; transition: border-color .2s, color .2s;
+    }
+    .example-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Status ── */
+    .status-bar {
+      display: none; align-items: center; gap: 10px;
+      padding: 12px 16px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px; color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .status-bar.visible { display: flex; }
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin .7s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error ── */
+    .error-box {
+      display: none;
+      background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.2);
+      border-radius: var(--radius-sm); padding: 14px 18px;
+      color: var(--red); font-size: 14px; margin-bottom: 16px;
+    }
+    .error-box.visible { display: block; }
+
+    /* ── Results ── */
+    .results-section { display: none; }
+    .results-section.visible { display: block; }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .result-card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .result-card-title {
+      font-family: var(--font-display); font-size: 13px; font-weight: 700;
+      color: var(--muted); letter-spacing: .06em; text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .result-card-title .icon { font-size: 16px; }
+    .badge {
+      font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 50px;
+    }
+    .badge-green { background: rgba(52,211,153,.12); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
+    .badge-accent { background: var(--accent-glow); color: var(--accent); border: 1px solid rgba(0,212,255,.2); }
+
+    /* SQL block */
+    .sql-block {
+      padding: 20px 24px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #c9d4f5;
+      background: var(--bg2);
+      white-space: pre-wrap;
+      word-break: break-all;
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute; top: 12px; right: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 4px 10px;
+      font-size: 12px; color: var(--muted);
+      cursor: pointer; transition: color .2s, border-color .2s;
+    }
+    .copy-btn:hover { color: var(--accent); border-color: rgba(0,212,255,.3); }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead { background: var(--bg2); }
+    th {
+      padding: 12px 16px; text-align: left;
+      font-family: var(--font-display); font-size: 11px; font-weight: 700;
+      color: var(--muted); letter-spacing: .06em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    td {
+      padding: 11px 16px; border-bottom: 1px solid rgba(138,160,220,.06);
+      color: var(--text); max-width: 300px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(0,212,255,.03); }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; color: var(--accent); }
+
+    /* Row count */
+    .row-count {
+      padding: 12px 24px;
+      border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--muted);
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center; padding: 60px 24px 40px;
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: .4; }
+    .empty-title { font-family: var(--font-display); font-size: 18px; color: var(--muted); margin-bottom: 8px; }
+    .empty-sub { font-size: 14px; color: var(--muted); opacity: .7; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      margin-top: 60px; padding: 24px;
+      text-align: center; font-size: 12px; color: var(--muted); opacity: .6;
+      position: relative; z-index: 1;
+    }
+
+    @media (max-width: 640px) {
+      .input-row { flex-direction: column; }
+      .btn-primary { width: 100%; }
+      h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="grid-bg"></div>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">
+        Clarityx<span class="dot">.</span>
+        <span class="nav-badge">AI Reporter</span>
+      </a>
+      <a href="/" class="nav-back">
+        ← Zpět na web
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main>
+    <div class="wrap">
+
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-badge">
+          <span class="dot"></span>
+          Demo — SAP Business One + Claude AI
+        </div>
+        <h1>
+          Ptejte se <span class="accent">česky</span>,<br>
+          získejte <span class="purple">SQL výsledky</span>
+        </h1>
+        <p class="hero-sub">
+          Zadejte otázku v češtině — AI ji převede na SQL dotaz,
+          spustí jej nad SAP B1 databází a zobrazí výsledky.
+        </p>
+      </div>
+
+      <!-- Input -->
+      <div class="input-section">
+        <label class="input-label" for="question">Váš dotaz v češtině</label>
+        <div class="input-row">
+          <textarea
+            id="question"
+            placeholder="Např.: Kteří zákazníci mají největší obrat za posledních 12 měsíců?"
+            rows="3"
+          ></textarea>
+          <button class="btn-primary" id="submitBtn" onclick="submitQuery()">
+            <span id="btnIcon">▶</span>
+            <span id="btnText">Spustit</span>
+          </button>
+        </div>
+
+        <p class="examples-label">Zkuste příklady:</p>
+        <div class="examples" id="examples"></div>
+      </div>
+
+      <!-- Status bar -->
+      <div class="status-bar" id="statusBar">
+        <div class="spinner"></div>
+        <span id="statusMsg">Převádím otázku na SQL…</span>
+      </div>
+
+      <!-- Error -->
+      <div class="error-box" id="errorBox"></div>
+
+      <!-- Results -->
+      <div class="results-section" id="results">
+
+        <!-- SQL Card -->
+        <div class="result-card">
+          <div class="result-card-header">
+            <span class="result-card-title">
+              <span class="icon">⚙</span> Vygenerovaný SQL
+            </span>
+            <span class="badge badge-accent" id="sqlBadge">SELECT</span>
+          </div>
+          <div class="sql-block" id="sqlBlock">
+            <button class="copy-btn" onclick="copySQL()">Kopírovat</button>
+            <span id="sqlText"></span>
+          </div>
+        </div>
+
+        <!-- Table Card -->
+        <div class="result-card">
+          <div class="result-card-header">
+            <span class="result-card-title">
+              <span class="icon">📊</span> Výsledky
+            </span>
+            <span class="badge badge-green" id="rowBadge">0 řádků</span>
+          </div>
+          <div class="table-wrap">
+            <table id="resultTable">
+              <thead id="tableHead"></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+          <div class="row-count" id="rowCount"></div>
+        </div>
+
+      </div>
+
+      <!-- Empty state (shown initially) -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">Zatím žádný dotaz</div>
+        <div class="empty-sub">Napište otázku výše a klikněte na Spustit</div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      AI SQL Reporter · Demo na SAP B1 datech · Powered by Claude AI
+    </div>
+  </footer>
+
+  <script>
+    const API_BASE = window.location.origin;
+    let lastSQL = '';
+
+    // Load example questions
+    async function loadExamples() {
+      try {
+        const resp = await fetch(`${API_BASE}/api/examples`);
+        const examples = await resp.json();
+        const container = document.getElementById('examples');
+        examples.forEach(q => {
+          const chip = document.createElement('button');
+          chip.className = 'example-chip';
+          chip.textContent = q;
+          chip.onclick = () => {
+            document.getElementById('question').value = q;
+            submitQuery();
+          };
+          container.appendChild(chip);
+        });
+      } catch (e) {
+        console.warn('Could not load examples', e);
+      }
+    }
+
+    // Format numbers in table cells
+    function formatCell(val) {
+      if (val === null || val === undefined) return '—';
+      if (typeof val === 'number') {
+        if (Number.isInteger(val)) return val.toLocaleString('cs-CZ');
+        return val.toLocaleString('cs-CZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      return String(val);
+    }
+
+    function isNumeric(val) {
+      return typeof val === 'number';
+    }
+
+    // Render table
+    function renderTable(columns, rows) {
+      const thead = document.getElementById('tableHead');
+      const tbody = document.getElementById('tableBody');
+      thead.innerHTML = '';
+      tbody.innerHTML = '';
+
+      if (!columns.length) {
+        tbody.innerHTML = '<tr><td style="color:var(--muted);padding:24px;text-align:center">Dotaz nevrátil žádné výsledky.</td></tr>';
+        return;
+      }
+
+      // Header
+      const headerRow = document.createElement('tr');
+      columns.forEach(col => {
+        const th = document.createElement('th');
+        th.textContent = col;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+
+      // Rows
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        row.forEach((cell, i) => {
+          const td = document.createElement('td');
+          td.textContent = formatCell(cell);
+          if (isNumeric(cell)) td.className = 'num';
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Main submit
+    async function submitQuery() {
+      const question = document.getElementById('question').value.trim();
+      if (!question) {
+        document.getElementById('question').focus();
+        return;
+      }
+
+      // UI: loading state
+      setLoading(true);
+      showError(null);
+      document.getElementById('results').classList.remove('visible');
+      document.getElementById('emptyState').style.display = 'none';
+      showStatus('Převádím otázku na SQL pomocí AI…');
+
+      try {
+        const resp = await fetch(`${API_BASE}/api/query`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
+        });
+
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+          throw new Error(err.detail || `HTTP ${resp.status}`);
+        }
+
+        const data = await resp.json();
+
+        if (data.error) {
+          showError(data.error);
+          if (data.sql) {
+            showResults(data);
+          }
+        } else {
+          showResults(data);
+        }
+
+      } catch (e) {
+        showError('Chyba: ' + e.message);
+        document.getElementById('emptyState').style.display = 'block';
+      } finally {
+        setLoading(false);
+        showStatus(null);
+      }
+    }
+
+    function showResults(data) {
+      lastSQL = data.sql || '';
+
+      // SQL block
+      document.getElementById('sqlText').textContent = lastSQL;
+
+      // Row badge
+      const rowBadge = document.getElementById('rowBadge');
+      rowBadge.textContent = `${data.row_count} ${data.row_count === 1 ? 'řádek' : data.row_count < 5 ? 'řádky' : 'řádků'}`;
+
+      // Table
+      renderTable(data.columns || [], data.rows || []);
+
+      // Row count info
+      const rc = document.getElementById('rowCount');
+      if (data.row_count >= 500) {
+        rc.textContent = `Zobrazeno ${data.row_count} řádků (limit). Upřesněte dotaz pro méně výsledků.`;
+      } else {
+        rc.textContent = `Celkem ${data.row_count} ${data.row_count === 1 ? 'výsledek' : 'výsledků'}`;
+      }
+
+      document.getElementById('results').classList.add('visible');
+    }
+
+    function setLoading(on) {
+      const btn = document.getElementById('submitBtn');
+      const icon = document.getElementById('btnIcon');
+      const text = document.getElementById('btnText');
+      btn.disabled = on;
+      icon.textContent = on ? '⏳' : '▶';
+      text.textContent = on ? 'Zpracovávám…' : 'Spustit';
+    }
+
+    function showStatus(msg) {
+      const bar = document.getElementById('statusBar');
+      const msgEl = document.getElementById('statusMsg');
+      if (msg) {
+        msgEl.textContent = msg;
+        bar.classList.add('visible');
+      } else {
+        bar.classList.remove('visible');
+      }
+    }
+
+    function showError(msg) {
+      const box = document.getElementById('errorBox');
+      if (msg) {
+        box.textContent = msg;
+        box.classList.add('visible');
+      } else {
+        box.classList.remove('visible');
+      }
+    }
+
+    function copySQL() {
+      if (!lastSQL) return;
+      navigator.clipboard.writeText(lastSQL).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = 'Zkopírováno!';
+        setTimeout(() => btn.textContent = 'Kopírovat', 1500);
+      });
+    }
+
+    // Enter key submits (Ctrl+Enter or Cmd+Enter)
+    document.getElementById('question').addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        submitQuery();
+      }
+    });
+
+    // Init
+    loadExamples();
+  </script>
+</body>
+</html>
