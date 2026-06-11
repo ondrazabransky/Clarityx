@@ -1,0 +1,451 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  AUDITOR
+  VIEWER
+}
+
+enum AuditStatus {
+  DRAFT
+  IN_PROGRESS
+  WAITING_FOR_CLIENT
+  REVIEW
+  COMPLETED
+  ARCHIVED
+}
+
+enum AuditType {
+  QUICK_IT_AUDIT
+  COMPLETE_IT_AUDIT
+  CYBERSECURITY_AUDIT
+  NIS2_READINESS
+  ISO27001_GAP
+  MICROSOFT365_SECURITY
+  BACKUP_DR
+  NETWORK_INFRASTRUCTURE
+  ENDPOINT_DEVICE_MANAGEMENT
+  WEB_APPLICATION_SECURITY
+}
+
+enum AnswerValue {
+  YES
+  MOSTLY_YES
+  PARTIAL
+  MOSTLY_NO
+  NO
+  NOT_RELEVANT
+  UNKNOWN
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum FindingStatus {
+  OPEN
+  ACCEPTED
+  IN_PROGRESS
+  IMPLEMENTED
+  VERIFIED
+  RISK_ACCEPTED
+  CLOSED
+}
+
+enum Priority {
+  P1
+  P2
+  P3
+  P4
+}
+
+enum RoadmapStatus {
+  PLANNED
+  IN_PROGRESS
+  DONE
+  DEFERRED
+}
+
+enum ReportType {
+  EXECUTIVE
+  TECHNICAL
+  NIS2_READINESS
+}
+
+enum MappingStrength {
+  PRIMARY
+  SECONDARY
+  SUPPORTING
+}
+
+enum ComplianceImpact {
+  BLOCKS_COMPLIANCE
+  WEAKENS_COMPLIANCE
+  EVIDENCE_MISSING
+  IMPROVEMENT_ONLY
+}
+
+enum ComplianceStatus {
+  NOT_ASSESSED
+  NON_COMPLIANT
+  PARTIALLY_COMPLIANT
+  MOSTLY_COMPLIANT
+  COMPLIANT
+  NOT_APPLICABLE
+}
+
+enum EvidenceStatus {
+  EVIDENCE_COMPLETE
+  EVIDENCE_PARTIAL
+  EVIDENCE_MISSING
+  EVIDENCE_NOT_REQUIRED
+}
+
+enum EvidenceQuality {
+  STRONG
+  MEDIUM
+  WEAK
+  MISSING
+}
+
+enum EntityType {
+  ESSENTIAL_ENTITY
+  IMPORTANT_ENTITY
+  NOT_IN_SCOPE
+  UNKNOWN
+}
+
+model User {
+  id           String      @id @default(cuid())
+  name         String
+  email        String      @unique
+  passwordHash String
+  role         UserRole    @default(VIEWER)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  audits       Audit[]     @relation("AuditCreator")
+  evidences    Evidence[]
+  reports      AuditReport[]
+  auditLogs    AuditLog[]
+}
+
+model Organization {
+  id                String   @id @default(cuid())
+  name              String
+  ico               String?
+  industry          String?
+  employeeCount     Int?
+  revenueRange      String?
+  country           String   @default("CZ")
+  description       String?
+  isNis2InScope     Boolean  @default(false)
+  entityType        EntityType @default(UNKNOWN)
+  sector            String?
+  subsector         String?
+  sizeCriterion     String?
+  revenueCriterion  String?
+  employeeCriterion String?
+  criticalService   String?
+  nis2Notes         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  audits            Audit[]
+}
+
+model Audit {
+  id              String       @id @default(cuid())
+  organizationId  String
+  title           String
+  auditType       AuditType    @default(COMPLETE_IT_AUDIT)
+  status          AuditStatus  @default(DRAFT)
+  maturityLevel   String?
+  overallScore    Float        @default(0)
+  riskScore       Float        @default(0)
+  itScore         Float        @default(0)
+  cybersecurityScore Float     @default(0)
+  nis2Score       Float        @default(0)
+  startDate       DateTime?
+  endDate         DateTime?
+  createdById     String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy       User         @relation("AuditCreator", fields: [createdById], references: [id])
+  sections        AuditSection[]
+  answers         AuditAnswer[]
+  findings        Finding[]
+  recommendations Recommendation[]
+  roadmapItems    RoadmapItem[]
+  evidences       Evidence[]
+  reports         AuditReport[]
+  complianceAssessments ComplianceAssessment[]
+}
+
+model AuditSection {
+  id          String   @id @default(cuid())
+  auditId     String
+  title       String
+  description String?
+  order       Int
+  weight      Int      @default(1)
+  audit       Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  questions   AuditQuestion[]
+}
+
+model AuditQuestion {
+  id                     String   @id @default(cuid())
+  sectionId              String
+  code                   String
+  question               String
+  description            String?
+  category               String
+  framework              String?
+  controlReference       String?
+  weight                 Int      @default(1)
+  maturityLevel          Int      @default(1)
+  evidenceRequired       Boolean  @default(false)
+  recommendationTemplate String?
+  riskIfMissing          String?
+  order                  Int
+  nis2Relevant           Boolean  @default(false)
+  nis2RequirementCode    String?
+  nis2Article            String?
+  nis2Category           String?
+  nis2MappingStrength    MappingStrength?
+  nis2EvidenceRequired   Boolean  @default(false)
+  nis2GapImpact          ComplianceImpact?
+  nis2Recommendation     String?
+  section                AuditSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  answers                AuditAnswer[]
+  findings               Finding[]
+  evidences              Evidence[]
+  complianceMappings     AuditQuestionComplianceMapping[]
+}
+
+model AuditAnswer {
+  id                String      @id @default(cuid())
+  auditId           String
+  questionId        String
+  answer            AnswerValue
+  score             Float       @default(0)
+  maturityScore     Float       @default(0)
+  comment           String?
+  evidenceUrl       String?
+  responsiblePerson String?
+  dueDate           DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  audit             Audit       @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  question          AuditQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  @@unique([auditId, questionId])
+}
+
+model Finding {
+  id             String        @id @default(cuid())
+  auditId        String
+  questionId     String?
+  title          String
+  description    String
+  severity       Severity
+  likelihood     Int
+  impact         Int
+  riskScore      Int
+  status         FindingStatus @default(OPEN)
+  recommendation String
+  priority       Priority      @default(P3)
+  owner          String?
+  dueDate        DateTime?
+  effort         String?
+  costEstimate   Decimal?      @db.Decimal(12, 2)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  audit          Audit         @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  question       AuditQuestion? @relation(fields: [questionId], references: [id], onDelete: SetNull)
+  recommendations Recommendation[]
+  evidences      Evidence[]
+  complianceMappings FindingComplianceMapping[]
+}
+
+model Recommendation {
+  id           String   @id @default(cuid())
+  auditId      String
+  findingId    String?
+  title        String
+  description  String
+  priority     Priority @default(P3)
+  effort       String?
+  costEstimate Decimal? @db.Decimal(12, 2)
+  benefit      String?
+  targetState  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  audit        Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  finding      Finding? @relation(fields: [findingId], references: [id], onDelete: SetNull)
+}
+
+model RoadmapItem {
+  id            String   @id @default(cuid())
+  auditId       String
+  title         String
+  description   String?
+  priority      Priority @default(P3)
+  quarter       String
+  status        RoadmapStatus @default(PLANNED)
+  owner         String?
+  dueDate       DateTime?
+  estimatedCost Decimal? @db.Decimal(12, 2)
+  isNis2        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  audit         Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+}
+
+model Evidence {
+  id              String   @id @default(cuid())
+  auditId         String
+  questionId      String?
+  findingId       String?
+  requirementId   String?
+  fileName        String
+  fileUrl         String
+  description     String?
+  evidenceType    String?
+  evidenceQuality EvidenceQuality @default(MISSING)
+  evidenceDate    DateTime?
+  evidenceOwner   String?
+  uploadedById    String
+  createdAt       DateTime @default(now())
+  audit           Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  question        AuditQuestion? @relation(fields: [questionId], references: [id], onDelete: SetNull)
+  finding         Finding? @relation(fields: [findingId], references: [id], onDelete: SetNull)
+  requirement     ComplianceRequirement? @relation(fields: [requirementId], references: [id], onDelete: SetNull)
+  uploadedBy      User     @relation(fields: [uploadedById], references: [id])
+}
+
+model AuditReport {
+  id          String     @id @default(cuid())
+  auditId     String
+  reportType  ReportType
+  generatedAt DateTime   @default(now())
+  fileUrl     String?
+  summary     String?
+  createdById String
+  audit       Audit      @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  createdBy   User       @relation(fields: [createdById], references: [id])
+}
+
+model ComplianceFramework {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  name         String
+  description  String?
+  version      String?
+  country      String?
+  validFrom    DateTime?
+  sourceUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  requirements ComplianceRequirement[]
+  assessments  ComplianceAssessment[]
+}
+
+model ComplianceRequirement {
+  id              String   @id @default(cuid())
+  frameworkId     String
+  code            String   @unique
+  title           String
+  description     String
+  article         String?
+  paragraph       String?
+  category        String
+  requirementType String
+  mandatory       Boolean  @default(true)
+  weight          Int      @default(1)
+  recommendedEvidence Json?
+  recommendedActions Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  framework       ComplianceFramework @relation(fields: [frameworkId], references: [id], onDelete: Cascade)
+  questionMappings AuditQuestionComplianceMapping[]
+  findingMappings  FindingComplianceMapping[]
+  requirementAssessments ComplianceRequirementAssessment[]
+  evidences       Evidence[]
+}
+
+model AuditQuestionComplianceMapping {
+  id              String @id @default(cuid())
+  questionId      String
+  requirementId   String
+  mappingStrength MappingStrength
+  mappingNote     String?
+  question        AuditQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  requirement     ComplianceRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  @@unique([questionId, requirementId])
+}
+
+model FindingComplianceMapping {
+  id                 String @id @default(cuid())
+  findingId          String
+  requirementId      String
+  impactOnCompliance ComplianceImpact
+  note               String?
+  finding            Finding @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  requirement        ComplianceRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  @@unique([findingId, requirementId])
+}
+
+model ComplianceAssessment {
+  id                     String @id @default(cuid())
+  auditId                String
+  frameworkId            String
+  overallComplianceScore Float  @default(0)
+  status                 ComplianceStatus @default(NOT_ASSESSED)
+  generatedAt            DateTime @default(now())
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  audit                  Audit @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  framework              ComplianceFramework @relation(fields: [frameworkId], references: [id], onDelete: Cascade)
+  requirements           ComplianceRequirementAssessment[]
+}
+
+model ComplianceRequirementAssessment {
+  id                     String @id @default(cuid())
+  complianceAssessmentId String
+  requirementId          String
+  status                 ComplianceStatus @default(NOT_ASSESSED)
+  score                  Float @default(0)
+  evidenceStatus         EvidenceStatus @default(EVIDENCE_MISSING)
+  summary                String?
+  gapDescription         String?
+  recommendation         String?
+  priority               Priority?
+  owner                  String?
+  dueDate                DateTime?
+  complianceAssessment   ComplianceAssessment @relation(fields: [complianceAssessmentId], references: [id], onDelete: Cascade)
+  requirement            ComplianceRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  @@unique([complianceAssessmentId, requirementId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
