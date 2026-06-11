@@ -2,6 +2,8 @@ import { AppShell, PageHeader } from "@/components/app-shell";
 import { ButtonLink, Card, StatCard } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const [audits, organizations, findings] = await Promise.all([
     prisma.audit.findMany({ include: { organization: true }, orderBy: { updatedAt: "desc" }, take: 8 }),

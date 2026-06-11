@@ -2,6 +2,8 @@ import { AppShell, PageHeader } from "@/components/app-shell";
 import { Badge, Card } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function UsersPage() {
   const users = await prisma.user.findMany({ orderBy: { email: "asc" } });
   return (

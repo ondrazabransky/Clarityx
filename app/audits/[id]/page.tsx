@@ -7,6 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { calculateAuditScores, summarizeFindings } from "@/services/scoring";
 import { generateNis2Assessment } from "@/services/ai-ready";
 
+export const dynamic = "force-dynamic";
+
 export default async function AuditDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const audit = await prisma.audit.findUnique({

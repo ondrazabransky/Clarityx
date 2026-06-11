@@ -5,6 +5,8 @@ import { Card, ProgressBar, StatCard, Badge } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
 import { generateNis2Assessment } from "@/services/ai-ready";
 
+export const dynamic = "force-dynamic";
+
 export default async function Nis2Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const audit = await prisma.audit.findUnique({ where: { id }, include: { organization: true, findings: { include: { question: true } }, roadmapItems: { where: { isNis2: true } } } });

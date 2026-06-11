@@ -5,6 +5,8 @@ import { Badge, Card } from "@/components/ui";
 import { answerLabels } from "@/lib/audit-template";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function QuestionnairePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const audit = await prisma.audit.findUnique({ where: { id }, include: { organization: true, sections: { orderBy: { order: "asc" }, include: { questions: { orderBy: { order: "asc" }, include: { answers: { where: { auditId: id } } } } } } } });

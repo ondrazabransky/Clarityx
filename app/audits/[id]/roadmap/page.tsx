@@ -4,6 +4,8 @@ import { AuditTabs } from "@/components/audit-tabs";
 import { Badge, Card } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function RoadmapPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const audit = await prisma.audit.findUnique({ where: { id }, include: { roadmapItems: { orderBy: [{ priority: "asc" }, { dueDate: "asc" }] } } });

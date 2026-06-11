@@ -4,6 +4,8 @@ import { AppShell, PageHeader } from "@/components/app-shell";
 import { Card } from "@/components/ui";
 import { authOptions } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export default async function SelfAuditPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect("/login?callbackUrl=/self-audit");

@@ -4,6 +4,8 @@ import { AuditTabs } from "@/components/audit-tabs";
 import { Badge, Card, severityTone } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function FindingDetailPage({ params }: { params: Promise<{ id: string; findingId: string }> }) {
   const { id, findingId } = await params;
   const finding = await prisma.finding.findUnique({ where: { id: findingId }, include: { audit: true, question: true, complianceMappings: { include: { requirement: true } } } });

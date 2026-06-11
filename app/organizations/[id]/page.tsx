@@ -4,6 +4,8 @@ import { Badge, Card, StatCard } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
 import { assessNis2Applicability } from "@/services/compliance";
 
+export const dynamic = "force-dynamic";
+
 export default async function OrganizationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const organization = await prisma.organization.findUnique({ where: { id }, include: { audits: true } });

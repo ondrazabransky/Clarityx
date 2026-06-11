@@ -2,6 +2,8 @@ import { AppShell, PageHeader } from "@/components/app-shell";
 import { Card } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewAuditPage() {
   const organizations = await prisma.organization.findMany({ orderBy: { name: "asc" } });
   return (
