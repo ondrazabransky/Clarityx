@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BarChart3, Building2, ClipboardList, FileText, LayoutDashboard, Settings, ShieldCheck, Users } from "lucide-react";
+import { BarChart3, Building2, ClipboardList, LayoutDashboard, Settings, ShieldCheck, Users } from "lucide-react";
+import { UserMenu } from "@/components/user-menu";
 
 const nav = [
   ["Dashboard", "/dashboard", LayoutDashboard],
@@ -30,9 +31,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
         </nav>
-        <div className="absolute bottom-4 left-4 right-4 rounded-md border border-blue-200 bg-blue-50 p-3 text-xs text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-100">
-          <div className="flex items-center gap-2 font-semibold"><BarChart3 size={14} /> Tři skóre</div>
-          IT maturity, cybersecurity maturity a NIS2 readiness jsou počítány odděleně.
+        <div className="absolute bottom-4 left-4 right-4 space-y-3">
+          <div className="rounded-md border border-blue-200 bg-blue-50 p-3 text-xs text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-100">
+            <div className="flex items-center gap-2 font-semibold"><BarChart3 size={14} /> Tři skóre</div>
+            IT maturity, cybersecurity maturity a NIS2 readiness jsou počítány odděleně.
+          </div>
+          <UserMenu />
         </div>
       </aside>
       <main className="lg:pl-72">
