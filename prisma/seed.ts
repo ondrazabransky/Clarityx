@@ -59,11 +59,11 @@ async function main() {
   }
 
   const organization = await prisma.organization.upsert({
-    where: { id: "demo-organization-egoe" },
+    where: { id: "demo-organization-vyroba" },
     update: {},
     create: {
-      id: "demo-organization-egoe",
-      name: "Egoé Manufacturing Demo",
+      id: "demo-organization-vyroba",
+      name: "Ukázková výrobní firma",
       ico: "12345678",
       industry: "Výroba a servisní organizace",
       employeeCount: 180,
